@@ -652,7 +652,7 @@ if(!wEl||!rEl){alert('Input elements not found');return;}
 const w=parseInt(wEl.value)||0;
 const r=parseInt(rEl.value)||0;
 const rpe=parseFloat(document.getElementById('mExRPE').value)||null;
-if(!w)return;
+if(!w&&!r)return; // Allow 0 weight (bodyweight) or 0 reps (isoholds)
 const s=getState();
 if(!s.exerciseWeights)s.exerciseWeights={};
 // Migrate old format (object) to new format (array)
