@@ -641,10 +641,13 @@ closeModal();render();
 }
 
 function saveExWeightEntry(){
-const w=parseInt(document.getElementById('mExW').value)||0;
-const r=parseInt(document.getElementById('mExR').value)||0;
+const wEl=document.getElementById('mExW');
+const rEl=document.getElementById('mExR');
+if(!wEl||!rEl)return;
+const w=parseInt(wEl.value)||0;
+const r=parseInt(rEl.value)||0;
 const rpe=parseFloat(document.getElementById('mExRPE').value)||null;
-if(!w)return;
+if(!w){alert('Enter weight');return;}
 const s=getState();
 if(!s.exerciseWeights)s.exerciseWeights={};
 if(!s.exerciseWeights[modal.data.key])s.exerciseWeights[modal.data.key]=[];
