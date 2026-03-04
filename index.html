@@ -227,6 +227,8 @@ legs2:{label:'Legs 2',sub:'Day 6 Ham',main:[
 // STATE
 // ═══════════════════════════════════════════
 let page='dashboard', curDay='push1', modal=null;
+let restTimer=null, restSeconds=0, restInterval=null;
+const DEFAULT_REST=90; // seconds
 const today=DB.today();
 
 function getState(){
@@ -519,7 +521,7 @@ return h;
 // MODALS
 // ═══════════════════════════════════════════
 function openModal(type,data){modal={type,data};renderModal()}
-function closeModal(){modal=null;renderModal()}
+function closeModal(){stopRestTimer();modal=null;renderModal();render()}
 function renderModal(){
 const el=document.getElementById('modal');
 if(!modal){el.className='mo';el.innerHTML='';return}
@@ -550,6 +552,18 @@ h+='<span style="color:var(--t2);font-size:12px">Set '+(i+1)+': <span style="col
 h+='<button class="del-btn" data-act="delSet" data-i="'+i+'" style="width:20px;height:20px;font-size:14px">&times;</button></div>';
 });
 h+='</div>';
+}
+// Rest timer display
+if(restInterval){
+const mins=Math.floor(restSeconds/60);
+const secs=restSeconds%60;
+h+='<div id="restTimer" style="text-align:center;padding:16px;background:var(--s2);border-radius:8px;margin-bottom:12px">';
+h+='<div style="font-size:11px;color:var(--t3);margin-bottom:4px">REST TIME</div>';
+h+='<div style="font-size:36px;font-weight:700;color:'+(restSeconds<=10?'var(--pri)':'var(--yel)')+'">'+mins+':'+(secs<10?'0':'')+secs+'</div>';
+h+='<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">';
+h+='<button class="bs" data-act="addRest" data-sec="30" style="padding:6px 12px;font-size:11px">+30s</button>';
+h+='<button class="bs" data-act="skipRest" style="padding:6px 12px;font-size:11px">Skip</button>';
+h+='</div></div>';
 }
 h+='<div style="color:var(--t3);font-size:11px;margin-bottom:6px">Add Set '+(sets.length+1)+':</div>';
 h+='<div class="ir"><div class="ig"><div class="il">Weight (lbs)</div><input class="inf" id="mExW" type="number" placeholder="0"></div><div class="ig"><div class="il">Reps</div><input class="inf" id="mExR" type="number" placeholder="0"></div></div>';
@@ -587,6 +601,8 @@ else if(act==='saveFood'){b.onclick=saveFood}
 else if(act==='saveWeight'){b.onclick=saveWeightEntry}
 else if(act==='saveExWeight'){b.onclick=saveExWeightEntry}
 else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&s.exerciseWeights[modal.data.key]){s.exerciseWeights[modal.data.key].splice(parseInt(b.dataset.i),1);if(s.exerciseWeights[modal.data.key].length===0)delete s.exerciseWeights[modal.data.key];saveState(s);renderModal()}}}
+else if(act==='addRest'){b.onclick=()=>{restSeconds+=parseInt(b.dataset.sec);renderModal()}}
+else if(act==='skipRest'){b.onclick=()=>{stopRestTimer();renderModal()}}
 else if(act==='closeModal'){b.onclick=closeModal}
 });
 // Modal overlay close
@@ -637,8 +653,38 @@ saveState(s);
 const hist=DB.get('exWeightHist')||[];
 hist.push({d:today,name:modal.data.name,w,r,rpe,set:s.exerciseWeights[modal.data.key].length});
 DB.set('exWeightHist',hist);
+// Start rest timer
+startRestTimer();
 // Stay in modal to add more sets
 renderModal();
+}
+
+function startRestTimer(){
+if(restInterval)clearInterval(restInterval);
+restSeconds=DEFAULT_REST;
+restInterval=setInterval(()=>{
+restSeconds--;
+if(restSeconds<=0){
+clearInterval(restInterval);
+restInterval=null;
+// Vibrate if supported
+if(navigator.vibrate)navigator.vibrate([200,100,200]);
+renderModal();
+} else {
+const el=document.getElementById('restTimer');
+if(el){
+const mins=Math.floor(restSeconds/60);
+const secs=restSeconds%60;
+el.querySelector('div:nth-child(2)').textContent=mins+':'+(secs<10?'0':'')+secs;
+el.querySelector('div:nth-child(2)').style.color=restSeconds<=10?'var(--pri)':'var(--yel)';
+}
+}
+},1000);
+}
+
+function stopRestTimer(){
+if(restInterval){clearInterval(restInterval);restInterval=null;}
+restSeconds=0;
 }
 
 function saveWorkoutSnap(){
