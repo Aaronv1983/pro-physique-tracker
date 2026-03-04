@@ -297,8 +297,16 @@ h+='</div></div>';
 h+='<div class="cd"><div class="ch"><div class="ct">&#x1F4A7; Water</div><div style="font-size:11px;color:var(--t2)">'+s.water+'/'+prof.waterCups+'</div></div><div class="wt">';
 for(let i=0;i<prof.waterCups;i++) h+='<button class="wc'+(i<s.water?' fl':'')+'" data-act="water" data-i="'+i+'">'+(i<s.water?'&#x1F4A7;':'&#x25CB;')+'</button>';
 h+='</div><div style="font-size:10px;color:var(--t3);margin-top:6px">80-90 oz/day &middot; 20-30 oz during workout</div></div>';
+// Cardio Card
+const cardioGoal=3; // 3x per week
+const cardioDone=s.cardioThisWeek||0;
+h+='<div class="cd"><div class="ch"><div class="ct">🏃 Cardio</div><div style="font-size:11px;color:var(--t2)">'+cardioDone+'/'+cardioGoal+' this week</div></div>';
+h+='<div style="padding:8px 0;font-size:12px;color:var(--t3)">';
+h+='<div style="margin-bottom:4px">Treadmill Walk: <span style="color:var(--t2)">Incline 6-8, Speed 3-4, 30 min</span></div>';
+h+='<div>No cardio on golf days</div></div>';
+h+='<button class="bp" style="margin-top:8px" data-act="logCardio">'+(s.cardioToday?'✓ Done Today':'Log Cardio Session')+'</button></div>';
 // Stats row
-h+='<div class="sr"><div class="sb"><div class="sbl">Weight</div><div class="sbv">'+lastW+'</div><div class="sbs">lbs</div></div><div class="sb"><div class="sbl">Daily Steps</div><div class="sbv">&mdash;</div><div class="sbs">Goal: '+prof.stepsGoal.toLocaleString()+'</div></div></div>';
+h+='<div class="sr"><div class="sb"><div class="sbl">Weight</div><div class="sbv">'+lastW+'</div><div class="sbs">lbs</div></div><div class="sb" data-act="logSteps" style="cursor:pointer"><div class="sbl">Daily Steps</div><div class="sbv">'+(s.steps||'—')+'</div><div class="sbs">Goal: 8,000-10,000</div></div></div>';
 // Tip
 h+='<div class="tc2"><div class="ti">&#x1F4A1;</div><div class="tt">Put 25-30% of carbs in pre/post workout meals. Keep fats low around training.</div></div>';
 return h;
@@ -604,10 +612,12 @@ else if(act==='saveSettings'){b.onclick=saveSettings}
 else if(act==='resetMacros'){b.onclick=()=>{if(confirm('Reset macros to original Pro Physique values?')){saveMacros(JSON.parse(JSON.stringify(MACROS_DEFAULT)));render()}}}
 else if(act==='saveFood'){b.onclick=saveFood}
 else if(act==='saveWeight'){b.onclick=saveWeightEntry}
-else if(act==='saveExWeight'){b.onclick=()=>{alert('Button clicked!');saveExWeightEntry();}}
+else if(act==='saveExWeight'){b.onclick=saveExWeightEntry}
 else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&s.exerciseWeights[modal.data.key]){if(!Array.isArray(s.exerciseWeights[modal.data.key]))s.exerciseWeights[modal.data.key]=[s.exerciseWeights[modal.data.key]];s.exerciseWeights[modal.data.key].splice(parseInt(b.dataset.i),1);if(s.exerciseWeights[modal.data.key].length===0)delete s.exerciseWeights[modal.data.key];saveState(s);renderModal()}}}
 else if(act==='addRest'){b.onclick=()=>{restSeconds+=parseInt(b.dataset.sec);renderModal()}}
 else if(act==='skipRest'){b.onclick=()=>{stopRestTimer();renderModal()}}
+else if(act==='logCardio'){b.onclick=()=>{const s=getState();if(!s.cardioToday){s.cardioToday=true;s.cardioThisWeek=(s.cardioThisWeek||0)+1;saveState(s);render()}}}
+else if(act==='logSteps'){b.onclick=()=>{const steps=prompt('Enter steps:');if(steps){const s=getState();s.steps=parseInt(steps)||0;saveState(s);render()}}}
 else if(act==='closeModal'){b.onclick=closeModal}
 });
 // Modal overlay close
