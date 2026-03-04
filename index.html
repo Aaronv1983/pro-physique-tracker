@@ -605,7 +605,7 @@ else if(act==='resetMacros'){b.onclick=()=>{if(confirm('Reset macros to original
 else if(act==='saveFood'){b.onclick=saveFood}
 else if(act==='saveWeight'){b.onclick=saveWeightEntry}
 else if(act==='saveExWeight'){b.onclick=()=>{alert('Button clicked!');saveExWeightEntry();}}
-else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&s.exerciseWeights[modal.data.key]){s.exerciseWeights[modal.data.key].splice(parseInt(b.dataset.i),1);if(s.exerciseWeights[modal.data.key].length===0)delete s.exerciseWeights[modal.data.key];saveState(s);renderModal()}}}
+else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&s.exerciseWeights[modal.data.key]){if(!Array.isArray(s.exerciseWeights[modal.data.key]))s.exerciseWeights[modal.data.key]=[s.exerciseWeights[modal.data.key]];s.exerciseWeights[modal.data.key].splice(parseInt(b.dataset.i),1);if(s.exerciseWeights[modal.data.key].length===0)delete s.exerciseWeights[modal.data.key];saveState(s);renderModal()}}}
 else if(act==='addRest'){b.onclick=()=>{restSeconds+=parseInt(b.dataset.sec);renderModal()}}
 else if(act==='skipRest'){b.onclick=()=>{stopRestTimer();renderModal()}}
 else if(act==='closeModal'){b.onclick=closeModal}
