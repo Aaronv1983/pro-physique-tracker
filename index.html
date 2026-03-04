@@ -641,11 +641,10 @@ closeModal();render();
 }
 
 function saveExWeightEntry(){
-console.log('saveExWeightEntry called');
+try{
 const wEl=document.getElementById('mExW');
 const rEl=document.getElementById('mExR');
-console.log('wEl:',wEl,'rEl:',rEl);
-if(!wEl||!rEl){console.log('elements missing');return;}
+if(!wEl||!rEl){alert('Input elements not found');return;}
 const w=parseInt(wEl.value)||0;
 const r=parseInt(rEl.value)||0;
 const rpe=parseFloat(document.getElementById('mExRPE').value)||null;
@@ -663,6 +662,7 @@ DB.set('exWeightHist',hist);
 startRestTimer();
 // Stay in modal to add more sets
 renderModal();
+}catch(e){alert('Error: '+e.message);}
 }
 
 function startRestTimer(){
