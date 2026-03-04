@@ -229,6 +229,8 @@ legs2:{label:'Legs 2',sub:'Day 6 Ham',main:[
 let page='dashboard', curDay='push1', modal=null;
 let restTimer=null, restSeconds=0, restInterval=null;
 const DEFAULT_REST=90; // seconds
+let cardioInterval=null, cardioSeconds=0, cardioPaused=false;
+const CARDIO_TIME=30*60; // 30 minutes
 const today=DB.today();
 
 function getState(){
@@ -304,7 +306,21 @@ h+='<div class="cd"><div class="ch"><div class="ct">🏃 Cardio</div><div style=
 h+='<div style="padding:8px 0;font-size:12px;color:var(--t3)">';
 h+='<div style="margin-bottom:4px">Treadmill Walk: <span style="color:var(--t2)">Incline 6-8, Speed 3-4, 30 min</span></div>';
 h+='<div>No cardio on golf days</div></div>';
-h+='<button class="bp" style="margin-top:8px" data-act="logCardio">'+(s.cardioToday?'✓ Done Today':'Log Cardio Session')+'</button></div>';
+// Cardio timer
+if(cardioInterval){
+const mins=Math.floor(cardioSeconds/60);
+const secs=cardioSeconds%60;
+h+='<div id="cardioTimer" style="text-align:center;padding:16px;background:var(--s2);border-radius:8px;margin:8px 0">';
+h+='<div style="font-size:11px;color:var(--t3);margin-bottom:4px">CARDIO TIME</div>';
+h+='<div style="font-size:42px;font-weight:700;color:'+(cardioSeconds<=60?'var(--pri)':'var(--grn)')+'">'+mins+':'+(secs<10?'0':'')+secs+'</div>';
+h+='<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">';
+h+='<button class="bs" data-act="pauseCardio" style="padding:6px 12px;font-size:11px">'+(cardioPaused?'▶ Resume':'⏸ Pause')+'</button>';
+h+='<button class="bp" data-act="stopCardio" style="padding:6px 12px;font-size:11px">✓ Done</button>';
+h+='</div></div>';
+} else {
+h+='<button class="bp" style="margin-top:8px" data-act="'+(s.cardioToday?'logCardio':'startCardio')+'">'+(s.cardioToday?'✓ Done Today':'▶ Start 30 Min Timer')+'</button>';
+}
+h+='</div>';
 // Stats row
 h+='<div class="sr"><div class="sb"><div class="sbl">Weight</div><div class="sbv">'+lastW+'</div><div class="sbs">lbs</div></div><div class="sb" data-act="logSteps" style="cursor:pointer"><div class="sbl">Daily Steps</div><div class="sbv">'+(s.steps||'—')+'</div><div class="sbs">Goal: 8,000-10,000</div></div></div>';
 // Tip
@@ -617,6 +633,9 @@ else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&
 else if(act==='addRest'){b.onclick=()=>{restSeconds+=parseInt(b.dataset.sec);renderModal()}}
 else if(act==='skipRest'){b.onclick=()=>{stopRestTimer();renderModal()}}
 else if(act==='logCardio'){b.onclick=()=>{const s=getState();if(!s.cardioToday){s.cardioToday=true;s.cardioThisWeek=(s.cardioThisWeek||0)+1;saveState(s);render()}}}
+else if(act==='startCardio'){b.onclick=startCardioTimer}
+else if(act==='pauseCardio'){b.onclick=()=>{cardioPaused=!cardioPaused;render()}}
+else if(act==='stopCardio'){b.onclick=()=>{stopCardioTimer();const s=getState();s.cardioToday=true;s.cardioThisWeek=(s.cardioThisWeek||0)+1;saveState(s);render()}}
 else if(act==='logSteps'){b.onclick=()=>{const steps=prompt('Enter steps:');if(steps){const s=getState();s.steps=parseInt(steps)||0;saveState(s);render()}}}
 else if(act==='closeModal'){b.onclick=closeModal}
 });
@@ -710,6 +729,38 @@ el.querySelector('div:nth-child(2)').style.color=restSeconds<=10?'var(--pri)':'v
 function stopRestTimer(){
 if(restInterval){clearInterval(restInterval);restInterval=null;}
 restSeconds=0;
+}
+
+function startCardioTimer(){
+if(cardioInterval)clearInterval(cardioInterval);
+cardioSeconds=CARDIO_TIME;
+cardioPaused=false;
+render();
+cardioInterval=setInterval(()=>{
+if(cardioPaused)return;
+cardioSeconds--;
+if(cardioSeconds<=0){
+stopCardioTimer();
+if(navigator.vibrate)navigator.vibrate([500,200,500,200,500]);
+alert('🎉 Cardio complete!');
+const s=getState();s.cardioToday=true;s.cardioThisWeek=(s.cardioThisWeek||0)+1;saveState(s);
+render();
+} else {
+const el=document.getElementById('cardioTimer');
+if(el){
+const mins=Math.floor(cardioSeconds/60);
+const secs=cardioSeconds%60;
+el.querySelector('div:nth-child(2)').textContent=mins+':'+(secs<10?'0':'')+secs;
+el.querySelector('div:nth-child(2)').style.color=cardioSeconds<=60?'var(--pri)':'var(--grn)';
+}
+}
+},1000);
+}
+
+function stopCardioTimer(){
+if(cardioInterval){clearInterval(cardioInterval);cardioInterval=null;}
+cardioSeconds=0;
+cardioPaused=false;
 }
 
 function saveWorkoutSnap(){
