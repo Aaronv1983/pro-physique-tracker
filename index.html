@@ -600,7 +600,7 @@ else if(act==='saveSettings'){b.onclick=saveSettings}
 else if(act==='resetMacros'){b.onclick=()=>{if(confirm('Reset macros to original Pro Physique values?')){saveMacros(JSON.parse(JSON.stringify(MACROS_DEFAULT)));render()}}}
 else if(act==='saveFood'){b.onclick=saveFood}
 else if(act==='saveWeight'){b.onclick=saveWeightEntry}
-else if(act==='saveExWeight'){b.onclick=saveExWeightEntry}
+else if(act==='saveExWeight'){console.log('binding saveExWeight');b.onclick=saveExWeightEntry}
 else if(act==='delSet'){b.onclick=()=>{const s=getState();if(s.exerciseWeights&&s.exerciseWeights[modal.data.key]){s.exerciseWeights[modal.data.key].splice(parseInt(b.dataset.i),1);if(s.exerciseWeights[modal.data.key].length===0)delete s.exerciseWeights[modal.data.key];saveState(s);renderModal()}}}
 else if(act==='addRest'){b.onclick=()=>{restSeconds+=parseInt(b.dataset.sec);renderModal()}}
 else if(act==='skipRest'){b.onclick=()=>{stopRestTimer();renderModal()}}
@@ -641,9 +641,11 @@ closeModal();render();
 }
 
 function saveExWeightEntry(){
+console.log('saveExWeightEntry called');
 const wEl=document.getElementById('mExW');
 const rEl=document.getElementById('mExR');
-if(!wEl||!rEl)return;
+console.log('wEl:',wEl,'rEl:',rEl);
+if(!wEl||!rEl){console.log('elements missing');return;}
 const w=parseInt(wEl.value)||0;
 const r=parseInt(rEl.value)||0;
 const rpe=parseFloat(document.getElementById('mExRPE').value)||null;
